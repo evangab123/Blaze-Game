@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Blaze</title>
+  </head>
+  <link rel="stylesheet" href="style/style.css" />
+  <body>
+    <div id="container">
+      <canvas id="canvas" width="1000" height="700"></canvas>
+      <div id="introduction">
+        <h1 id="judul"><br>Blaze: The Wandering Flame</br</h1>
+        <p><br>"Space" for Start!</br>Fly low to save fuel</p>
+      </div>
+      <button id="restart">RESTART</button>
+    </div>
+    <!-- <img
+      src="./assets/angin.gif"
+      width="0"
+      height="0"
+      id="gif"
+      style="position: absolute"
+    /> -->
+    <img src="./assets/Blaze.png" width="0" height="0" id="skill1">
+    <img src="./assets/timetwist.png" width="0" height="0" id="skill2">
+    <img src="./assets/padlock.png" width="0" height="0" id="skillock">
+    <audio id="pickupSound" src="./assets/sparkle.mp3"></audio>
+    <audio id="skill1sound" src="./assets/woosh.wav"></audio>
+    <audio id="backgroundMusic" autoplay loop>
+      <source src="./assets/bgmhzd.mp3"></source>
+    </audio>
+    <script src="pendukung/Ball.js"></script>
+    <script src="pendukung/utils.js"></script>
+    <script src="pendukung/Box.js"></script>
+    <script src="pendukung/Item.js"></script>
+    <script src="pendukung/sujinko.js"></script>
+    <script src="pendukung/segment.js"></script>
+    <script>
+      window.onload = function () {
+        var canvas = document.getElementById("canvas"),
+          context = canvas.getContext("2d"),
+          ball = new sujinko(10,"white")
+          vy = 0,
+          ay = 0.5,
+          friction = 0.9,
+          levelgame = 0,
+          checker = 0,
+          g = 0.3;
+
+        var backgroundMusic = document.getElementById("backgroundMusic");
+        sudut = 0;
+        jumpStrength = -8;
+        boxObs = [];
+        ballfragments = [];
+        itemorb = [];
+        ball.x = 100 + ball.radius;
+        ball.y = 0;
+        let skill2checker = false;
+        let fuel = 100;
+        let heating = false;
+        let gameplay = false;
+        numBalls = 10;
+        var items = [];
+        let score = 0;
+        const introductionElement = document.getElementById("introduction");
+        const restartButton = document.getElementById("restart");
+
+        var bgImage = new Image();
+        bgImage.src = "./assets/Background.png";
+        var bgX = 0;
+        var bgSpeed = 2;
+
+        function drawBackground() {
+          context.drawImage(bgImage, bgX, 0, canvas.width, canvas.height);
+          context.drawImage(
+            bgImage,
+            bgX + canvas.width,
+            0,
+            canvas.width,
+            canvas.height
+          );
+          if(gameplay){
+            bgX -= bgSpeed;
+            if (bgX <= -canvas.width) {
+              bgX = 0;
+            }
+          }
+        }
+  
+        function drawHeader() {
+          if (gameplay) {
+            context.strokeStyle = fuel <= 30 ? "red" : "white";
+            context.strokeRect(30, 30, 150, 30);  
+            context.fillStyle =
+              fuel <= 30 ? "rgba(150,150,200,0.5)" : "rgba(253, 222, 85,0.5)";
+            context.fillRect(30, 30, (150 * fuel) / 100, 30);
+          }
+        }
+        function drawPoint() {
+          if (gameplay) {
+            context.strokeRect(30, 70, 150, 30);
+            context.font = "20px Arial";
+            context.fillStyle = "black";
+            context.fillText("Score: " + score.toFixed(2), 40, 90);
+          }
+        }
+        function drawLevel() {
+          if (gameplay) {
+            context.font = "20px Arial";
+            context.fillStyle = "black";
+            context.fillText("Level: " + levelgame, 500, 30);
+          }
+        }      
+        function Drawskill1(){
+          if (gameplay) {
+            if(levelgame >=1){
+              var skill1image = document.getElementById('skill1');
+            context.strokeRect(canvas.width-75, 20, 50, 50);
+            context.drawImage(skill1image, canvas.width - 75, 20, 50, 50);
+            context.fillStyle = "black";
+            context.fillText("LShift", canvas.width - 75, 100);
+            
+            }else{
+              var skill1image = document.getElementById('skillock');
+            context.strokeRect(canvas.width-75, 20, 50, 50);
+            context.drawImage(skill1image, canvas.width - 75, 20, 50, 50);
+            context.fillStyle = "black";
+            context.fillText("LShift", canvas.width - 75, 100);
+            }
+            
+            
+            
+          }
+        }
+        function Drawskill2(){
+          if (gameplay) {
+            var skill2image = document.getElementById('skill2');
+            context.strokeRect(canvas.width-140, 20, 50, 50);
+            context.drawImage(skill2image, canvas.width - 140, 20, 50, 50);
+            context.fillStyle = "black";
+            context.fillText("Q", canvas.width - 120, 100);
+          }
+        }
+
+        function jump() {
+          ball.currentState = "fly";
+          if (heating && fuel > 0) {
+            vy = jumpStrength;
+            fuel -= 0.002 * Math.abs(ball.y);
+          } else {
+            vy -= jumpStrength * 0.1;
+          }
+          setTimeout(() => {
+            ball.currentState = "idle";
+          }, 500);    
+        }
+
+        document.addEventListener("keydown", function (event) {
+          if (event.code === "Space") {
+            
+            if (gameplay&score>=0.01) {
+              heating = true;
+              jump();
+              //showgif();
+            }else{
+              gameplay = true;
+              introductionElement.style.opacity = 0;
+            }
+          } else if (event.code === "ShiftLeft") {
+            //powerup updraft
+            if (gameplay && itemorb.length >= 5 && levelgame >= 1) {
+              ball.y -= 1000;
+              itemorb.splice(0, 5);
+              playSkill1sound();
+            }
+          } else if (event.code === "KeyQ") {
+            //powerup updraft
+            if (gameplay && itemorb.length >= 3) {
+              skill2checker = true;
+              console.log("Power-up activated!")
+              itemorb.splice(0, 3);
+              
+              setTimeout(() => {
+                skill2checker = false;
+                console.log("Power-up Deactivated!")
+              }, 5000);
+            }
+          }
+        });
+        document.addEventListener("keyup", function () {
+          heating = false;
+          //console.log(skill2checker);
+          
+        });
+        // var gifImage = document.getElementById("gif");
+        // // var superGif = new SuperGif({ gif: gifImage });
+        // function showGif() {
+        //   var newX = ball.x + 280;
+        //   var newY = ball.y - 20;
+        //   var gifWidth = 20;
+        //   var gifHeight = 10;
+        //   var canvasRect = canvas.getBoundingClientRect();
+        //   var canvasRight = canvas.width;
+        //   var canvasBottom = canvas.height;
+        //   //console.log(canvasRight, canvasBottom)
+
+        //   var gifRight = newX + gifWidth;
+        //   var gifBottom = newY + gifHeight;
+
+        //   if (gifRight > canvasRight) {
+        //     newX = canvasRight - gifWidth;
+        //   }
+        //   if (gifBottom > canvasBottom) {
+        //     newY = canvasBottom - gifHeight;
+        //   }
+
+        //   gif.style.left = newX + "px";
+        //   gif.style.top = newY + "px";
+        //   gif.style.width = gifWidth + "em";
+        //   gif.style.height = gifHeight + "em";
+        //   gif.style.display = "block";
+        //   gif.style.transform = "rotate(-90deg)";
+
+        //   setTimeout(function () {
+        //     gif.style.display = "none";
+        //   }, 300);
+        // }
+        function resetGame(){
+          sudut = 0;
+          jumpStrength = -8;
+          boxObs = [];
+          ballfragments = [];
+          itemorb = [];
+          ball.x = 100 + ball.radius;
+          ball.y = 0;
+          skill2checker = false;
+          fuel = 100;
+          heating = false;
+          gameplay = false;
+          numBalls = 10;
+          items = [];
+          score = 0;
+          levelgame = 0;
+          generateItem();
+          generateObstacles();
+          gameplay = true;
+          ball.currentState="idle";
+          backgroundMusic.src = "./assets/bgmhzd.mp3";
+          backgroundMusic.load();
+          backgroundMusic.play();
+        }
+
+        function generateObstacles(x = 5) {
+          
+          var numberOfObstacles = x;
+          var obstacleWidth = 100;
+          var gapHeight = 100;
+          var startX = canvas.width + obstacleWidth;
+          var minY = 300 ;
+          var maxY = canvas.height - gapHeight;
+
+          for (var i = 1; i < numberOfObstacles; i++) {
+            var randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+            if (score <= 50 && levelgame == 0) {
+              randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+              var boxBottom = new Box(
+                obstacleWidth,
+                canvas.height - (randomY + gapHeight),
+                "green","./assets/tree.png"
+              );
+              boxBottom.x = startX + i * 300;
+              boxBottom.y = randomY + gapHeight;
+              //boxObs.push(boxTop);
+              boxObs.push(boxBottom);
+              //console.log(boxObs.length);
+            } else if (score >= 50 && levelgame == 0) {
+              randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+              boxTop = new Box(obstacleWidth, randomY, "red","./assets/treerotate.png");
+              boxBottom = new Box(
+                obstacleWidth,
+                canvas.height - (randomY + gapHeight),
+                "green","./assets/tree.png"
+              );
+              boxBottom.x = startX + i * 300;
+              boxBottom.y = randomY + gapHeight;
+              boxTop.x = startX + i * 300;
+              boxTop.y = randomY - canvas.height;
+              boxObs.push(boxTop);
+              boxObs.push(boxBottom);
+              //console.log(boxObs.length);
+            } else if (score >= 100 && levelgame == 1) {
+              newWidth = 30;
+              newHeight = 100;
+              var randomY = Math.floor(Math.random() * (maxY - minY + 1));
+              var box = new Box(newWidth, newHeight, "blue","./assets/Flycactus.png");
+              box.x = startX + i * 300;
+              box.y = canvas.height / 2;
+              box.speed = -2;
+              boxObs.push(box);
+            }else if (score >= 200 && levelgame == 2) {
+              newWidth = 100;
+              newHeight = 20;
+              var segment1 = new Segment(newWidth, newHeight, "gray");
+              segment1.x = startX + i * 300;
+              segment1.y = Math.random()*canvas.width+ 100;
+              var segment2 = new Segment(newWidth, newHeight, "black");
+              
+              boxObs.push(segment1);
+              boxObs.push(segment2);
+              //console.log(boxObs.length);
+            }
+
+
+            //console.log(boxObs.length);
+          }
+        }
+        function reach (segment, xpos, ypos) {
+          
+          var dx = xpos - segment.x,
+              dy = ypos - segment.y;
+          segment.rotation = Math.atan2(dy, dx);
+          var w = segment.getPin().x - segment.x,
+              h = segment.getPin().y - segment.y;
+          return {
+            x: xpos - w,
+            y: ypos - h
+          };
+        }
+        
+        function position (segmentA, segmentB) {
+          segmentA.x = segmentB.getPin().x;
+          segmentA.y = segmentB.getPin().y;
+        }
+
+        function updateObstacles() {
+          if (gameplay) {
+            if (levelgame == 0) {
+              for (var i = 0; i < boxObs.length; i++) {
+                if (ball.y == canvas.height - ball.radius) {
+                  boxObs[i].x -= 0;
+                } else {
+                  if(skill2checker){
+                    boxObs[i].x -= 2 * 0.3;
+                  }else{
+                    boxObs[i].x -= 2;
+                  }
+                  
+                }
+              }
+            } else if (levelgame == 1) {
+              for (var i = 0; i < boxObs.length; i++) {
+                if (ball.y == canvas.height - ball.radius) {
+                  boxObs[i].x -= 0;
+                } if(skill2checker){
+                    boxObs[i].x -= 2 * 0.3;
+                  }else{
+                    boxObs[i].x -= 2;
+                  }
+                //console.log(boxObs[i].y)
+                if (i % 2 == 0) {
+                  boxObs[i].y += Math.sin(sudut) * 5;
+                } else if (i % 1 == 0) {
+                  boxObs[i].y -= Math.sin(sudut) * 15;
+                }
+              }
+            }else if (levelgame == 2){
+              for (var i = 0; i < boxObs.length; i++) {
+                if (ball.y == canvas.height - ball.radius) {
+                  boxObs[i].x -= 0;
+                } if(skill2checker){
+                    boxObs[i].x -= 2 * 0.3;
+                  }else{
+                    boxObs[i].x -= 2;
+                  }
+                if(i%2==0){
+                  var target = reach(boxObs[i+1], ball.x, ball.y);
+                  reach(boxObs[i], target.x, target.y);
+                  position(boxObs[i+1], boxObs[i]);
+                }
+                
+              }
+            }
+          }
+        }
+
+        function generateItem(x = 2) {
+          numItem = x;
+          for (var i = 0; i < numItem; i++) {
+              var item = new Item(10, "#FFFF00", false);
+              var startX = canvas.width;
+              item.x = canvas.width + item.radius;
+              item.y = Math.random() * canvas.height;
+              items.push(item);
+          }
+        }
+
+        function drawItems() {
+          for (var i = 0; i < items.length; i++) {
+            items[i].draw(context);
+
+            //console.log(items.length);
+            if (items[i].x < -100) {
+              items.splice(i, 1);
+            }
+            if (items.length < 1) {
+              generateItem();
+            }
+          }
+        }
+
+        var pickupSound = document.getElementById("pickupSound");
+        function playPickupSound() {
+          pickupSound.play();
+        }
+        var skill1sound = document.getElementById("skill1sound");
+        function playSkill1sound(){
+          skill1sound.play();
+        }
+
+        function updateItems() {
+          if (gameplay) {
+            for (var i = 0; i < items.length; i++) {
+              if (i % 2 == 0) {
+                if (ball.y == canvas.height - ball.radius) {
+                  items[i].x -= 0;
+                } else {
+                  items[i].x -= 2;
+                }
+              } else {
+                if (ball.y == canvas.height - ball.radius) {
+                  items[i].x -= 0;
+                } else {
+                  items[i].x -= 4;
+                }
+              }
+            }
+            for (var i = 0; i < items.length; i++) {
+              var item = items[i];
+              var dx = ball.x - item.x;
+              var dy = ball.y - item.y;
+              var distance = Math.sqrt(dx * dx + dy * dy);
+              //console.log(distance);
+
+              if (distance < ball.radius + item.radius && !item.isPickedUp) {
+                item.isPickedUp = true;
+                playPickupSound();
+                itemorb.push(item);
+                items.splice(i, 1);
+                if (items.length == 0) {
+                  generateItem();
+                }
+                score += 3;
+              }
+            }
+          }
+        }
+
+        function orbit(x = 1) {
+          var orbitRadius = 50;
+          var orbitSpeed = 0.005;
+
+          // Calculate new position of the item based on orbit
+          var orbit = new Item(10, "#FFFF00", true);
+          for (var i = 0; i < x; i++) {
+            orbitSpeed += 0.001;
+            orbit.x = ball.x + orbitRadius * Math.cos(orbitSpeed * Date.now());
+            orbit.y = ball.y + orbitRadius * Math.sin(orbitSpeed * Date.now());
+            orbit.draw(context);
+          }
+        }
+
+        function drawObstacles() {
+          for (var i = 0; i < boxObs.length; i++) {
+            boxObs[i].draw(context);
+            //console.log(boxObs.length);
+            if(levelgame==2){
+              if (boxObs[0].x <= -100) {
+                //console.log("lol");
+                boxObs.splice(0, 2);
+              }
+            if (boxObs.length <= 5) {
+              generateObstacles();
+            }
+            }
+            else{
+              if (boxObs[0].x < -100) {
+                boxObs.shift();
+              }
+              if (boxObs.length <= 2) {
+                generateObstacles();
+                //console.log("aha");
+              }
+            }
+            
+          }
+        }
+
+        function gameOverscreen() {
+          //context.strokeRect(30, 70, 150, 30);
+          context.font = "20px Arial";
+          context.fillStyle = "white";
+          context.fillText("Final Score :", canvas.width/2-50, 200);
+          context.fillText( score.toFixed(2), canvas.width/2-50, 220);
+          restartButton.style.display = "block";
+          restartButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            resetGame();
+            restartButton.style.display = "none";
+          });
+        }
+
+        function detectCollision() {
+          if (!collisionDetected) {
+            if (levelgame == 0) {
+              for (var i = 0; i < boxObs.length; i++) {
+                var obstacle = boxObs[i];
+
+                if (utils.intersects(ball.getBounds(), obstacle.getBounds())) {
+                  collisionDetected = true;
+                  ball.currentState = "death"
+                  ball.draw(context);
+                  gameplay = false;
+                  itemorb = [];
+                  break;
+                }
+              }
+            }
+            if (levelgame == 1) {
+              for (var i = 0; i < boxObs.length; i++) {
+                var obstacle = boxObs[i];
+
+                if (utils.intersects(ball.getBounds(), obstacle.getBounds())) {
+                  collisionDetected = true;
+                  ball.currentState = "death"
+                  ball.draw(context);
+                  gameplay = false;
+                  itemorb = [];
+                  break;
+                }
+              }
+            }
+            if (levelgame == 2) {
+              for (var i = 0; i < boxObs.length; i++) {
+                var segmentss = boxObs[i];
+                //console.log(collisionDetected);
+                  if (utils.intersects(ball.getBounds(), segmentss.getBounds())) {
+                  //console.log("lol");
+                  collisionDetected = true;
+                  ball.currentState = "death"
+                  ball.draw(context);
+                  gameplay = false;
+                  itemorb = [];
+                  break;
+                  }
+                
+              }
+            }
+          }
+        }
+        function checkHit () {
+          var segment = boxObs[0],
+              dx = segment.getPin().x - ball.x,
+              dy = segment.getPin().y - ball.y,
+              dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < ball.radius) {
+            return true;
+          }
+        }
+        function pecah() {
+          
+          if (ballfragments.length <= 10) {
+            for (var j = 0; j < numBalls; j++) {
+              var ballfragment = new Ball(2, "orange");
+              ballfragment.vx = Math.random() * 6 - 3;
+              ballfragment.vy = Math.random() * -6 - 3;
+              ballfragment.x = 100 + ball.radius;
+              ballfragment.y = ball.y;
+              ballfragments.push(ballfragment);
+              //console.log(ballfragment.vx, ballfragment.vy);
+            }
+          }
+        }
+
+        function gameLoop() {
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          drawBackground()
+          
+          if (gameplay) {
+            if(skill2checker) {
+              vy += ay;
+              ball.y += vy*0.5;
+            }else{
+              vy += ay;
+              ball.y += vy;
+            }
+            
+          }
+
+          collisionDetected = false;
+
+          if (ball.y + ball.radius >= canvas.height) {
+            vy = -g * vy * friction;
+            ball.y = canvas.height - ball.radius;
+          }
+          if (ball.y == canvas.height - ball.radius) {
+            if (fuel <= 100) {
+              fuel += 0.5;
+            }
+          } else {
+            if(gameplay){
+              score += parseFloat((ball.x * 0.0001).toFixed(2));
+              //console.log(checker);
+              if (score >= 100 && levelgame == 0) {
+                boxObs = [];
+                levelgame = 1;
+                generateObstacles();
+                backgroundMusic.src = "./assets/bggameori.mp3";
+                backgroundMusic.load();
+                backgroundMusic.play();
+              } else if (score >= 200 && levelgame == 1) {
+                boxObs = [];
+                levelgame = 2;
+                generateObstacles();
+                backgroundMusic.src = "./assets/bgm3.mp3";
+                backgroundMusic.load();
+                backgroundMusic.play();
+              } else if (score >= 300 && levelgame == 2) {
+                boxObs = [];
+                levelgame = 3;
+                generateObstacles();
+                backgroundMusic.src = "./assets/bggame.mp3";
+                backgroundMusic.load();
+                backgroundMusic.play();
+              }
+            } 
+          }
+
+          detectCollision();
+
+          updateObstacles();
+          if (levelgame <= 2) {
+            drawObstacles();
+          }
+          updateItems();
+          drawItems();
+          drawHeader();
+          drawPoint();
+          drawLevel();
+          Drawskill1();
+          Drawskill2();
+          sudut += 0.05;
+          if (itemorb.length >= 1) {
+            orbit(itemorb.length);
+          }
+          ball.draw(context);
+          //buat gambaar
+
+          //console.log(collisionDetected);
+          if (collisionDetected) {
+            
+            ball.color = "#ffffff00";
+            pecah();
+            for (var i = 0; i < ballfragments.length; i++) {
+              var ballfragment = ballfragments[i];
+              ballfragment.radius = 10;
+              ballfragment.vy += g;
+              ballfragment.x += ballfragment.vx;
+              ballfragment.y += ballfragment.vy;
+              //console.log(ballfragment.vx, ballfragment.vy, i);
+              ballfragment.draw(context);
+              gameOverscreen();
+            }
+          }
+          window.requestAnimationFrame(gameLoop);
+        }
+
+        generateObstacles();
+        generateItem();
+        gameLoop();
+      };
+    </script>
+  </body>
+</html>
+

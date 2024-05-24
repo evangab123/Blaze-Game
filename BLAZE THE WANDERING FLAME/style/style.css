@@ -1,0 +1,70 @@
+canvas {
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  background-color: aqua;
+  border: black 2px solid;
+  background-size: cover;
+}
+
+/* .container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+} */
+
+#introduction {
+  position: absolute;
+  top: 40%; /* Atur posisi vertikal (misalnya, di tengah) */
+  left: 50%; /* Atur posisi horizontal (misalnya, di tengah) */
+  width: 960px;
+  height: 700px;
+  transform: translate(-50%, -50%); /* Geser elemen ke tengah */
+  font-weight: 600;
+  font-size: 72;
+  color: red;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  transition: opacity 2s;
+  display: flex;
+  align-items: center; /* Memusatkan vertikal */
+  justify-content: center; /* Memusatkan horizontal */
+  padding: 20px; /* Atur padding jika diperlukan */
+  border-radius: 10px; 
+}
+
+#introduction p {
+  margin: 0; /* Hilangkan margin default */
+}
+
+#restart {
+  top: 300px; /* Atur posisi vertikal (misalnya, di tengah) */
+  left: 900px;
+  width: 120px;
+  height: 120px;
+  position: absolute;
+  align-items: center;
+  text-align: center;
+  border-radius: 50%;
+  color: white;
+  background-color: red;
+  border: none;
+  font-weight: 700;
+  font-size: 1.2em;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  display: none;
+  cursor: pointer;
+}
+
+#gif {
+  position: absolute;
+}
+
+.sprite {
+  transform: scale(2);
+}
+
+body {
+  background-color: black;
+}
