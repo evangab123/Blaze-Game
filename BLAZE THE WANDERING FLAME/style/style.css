@@ -1,10 +1,16 @@
 canvas {
   margin-left: auto;
   margin-right: auto;
-  display: flex;
   background-color: aqua;
   border: black 2px solid;
-  background-size: cover;
+  /* background-size: cover; */
+}
+body, html {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* .container {
@@ -16,7 +22,7 @@ canvas {
 
 #introduction {
   position: absolute;
-  top: 40%; /* Atur posisi vertikal (misalnya, di tengah) */
+  top: 50%; /* Atur posisi vertikal (misalnya, di tengah) */
   left: 50%; /* Atur posisi horizontal (misalnya, di tengah) */
   width: 960px;
   height: 700px;
@@ -39,7 +45,7 @@ canvas {
 }
 
 #restart {
-  top: 300px; /* Atur posisi vertikal (misalnya, di tengah) */
+  top: 50%; /* Atur posisi vertikal (misalnya, di tengah) */
   left: 900px;
   width: 120px;
   height: 120px;
@@ -55,6 +61,82 @@ canvas {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   display: none;
   cursor: pointer;
+}
+
+#startButton {
+  position: absolute;
+  align-items: center;
+  text-align: center;
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-size: 1em;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  display: contents;
+  cursor: pointer;
+  transition: color 0.5s ease, background-color 0.3s ease;
+}
+
+#startButton:hover {
+  color: orange;
+}
+
+#HowtoP{
+  position: absolute;
+  align-items: center;
+  text-align: center;
+  color: white;
+  border: none;
+  font-weight: 700;
+  font-size: 1em;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  display: contents;
+  cursor: pointer;
+  transition: color 0.5s ease, background-color 0.3s ease;
+}
+#HowtoP:hover {
+  color: orange;
+}
+
+#BackHome{
+  position: absolute;
+  align-items: center;
+  text-align: center;
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-size: 1em;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  display: contents;
+  cursor: pointer;
+  transition: color 0.5s ease, background-color 0.3s ease;
+}
+#BackHome:hover{
+color: orange;
+}
+
+#howtocontainer {
+  top: 15%;
+  width: 600px;
+  padding: 20px;
+  color: white;
+  background-color: rgba(214, 199, 183, 0.5);
+  font-size: 1em;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  position: absolute;
+}
+
+#howtocontainer img {
+  margin-bottom: 10px;
+}
+
+#howtocontainer p, #howtocontainer span {
+  margin: 5px 0;
 }
 
 #gif {

@@ -17,6 +17,8 @@ function Item(radius, color, isPickedUp = false) {
 
     this.itemSpriteImage = new Image();
     this.itemSpriteImage.src = "./assets/item.png"; 
+    this.itemSpriteImagePick = new Image();
+    this.itemSpriteImagePick.src = "./assets/itembw.png"; 
     this.spriteWidth = 12132/ 6; 
     this.spriteHeight = 1793; 
     this.spriteZoom = 5; 
@@ -33,8 +35,14 @@ Item.prototype.draw = function(context) {
 
     this.updateFrame();
     
-
     let spriteImage = this.itemSpriteImage;
+
+    if(this.isPickedUp){
+        spriteImage = this.itemSpriteImagePick;
+    }else{
+        spriteImage = this.itemSpriteImage;
+    }
+
     if (spriteImage.complete) {
         context.drawImage(
             spriteImage,

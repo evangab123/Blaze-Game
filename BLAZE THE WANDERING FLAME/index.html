@@ -3,32 +3,6 @@
   <head>
     <meta charset="utf-8" />
     <title>Blaze</title>
-  </head>
-  <link rel="stylesheet" href="style/style.css" />
-  <body>
-    <div id="container">
-      <canvas id="canvas" width="1000" height="700"></canvas>
-      <div id="introduction">
-        <h1 id="judul"><br>Blaze: The Wandering Flame</br</h1>
-        <p><br>"Space" for Start!</br>Fly low to save fuel</p>
-      </div>
-      <button id="restart">RESTART</button>
-    </div>
-    <!-- <img
-      src="./assets/angin.gif"
-      width="0"
-      height="0"
-      id="gif"
-      style="position: absolute"
-    /> -->
-    <img src="./assets/Blaze.png" width="0" height="0" id="skill1">
-    <img src="./assets/timetwist.png" width="0" height="0" id="skill2">
-    <img src="./assets/padlock.png" width="0" height="0" id="skillock">
-    <audio id="pickupSound" src="./assets/sparkle.mp3"></audio>
-    <audio id="skill1sound" src="./assets/woosh.wav"></audio>
-    <audio id="backgroundMusic" autoplay loop>
-      <source src="./assets/bgmhzd.mp3"></source>
-    </audio>
     <script src="pendukung/Ball.js"></script>
     <script src="pendukung/utils.js"></script>
     <script src="pendukung/Box.js"></script>
@@ -36,6 +10,32 @@
     <script src="pendukung/sujinko.js"></script>
     <script src="pendukung/segment.js"></script>
     <script>
+      let gameplay = false;
+      function StartGame(){
+          const introductionElement = document.getElementById("introduction");
+          const Howto = document.getElementById("howtocontainer");
+          gameplay=true;
+          introductionElement.style.opacity = 0;
+          introductionElement.style.display = 'none';
+          Howto.style.opacity = 0;
+          Howto.style.display = 'none';
+      }
+      function HowtoShow(){
+          const introductionElement = document.getElementById("introduction");
+          const Howto = document.getElementById("howtocontainer");
+          introductionElement.style.opacity = 0;
+          introductionElement.style.display = 'none';
+          Howto.style.opacity = 1;
+          Howto.style.display = 'flex';
+      }
+      function BackMenu(){
+          const introductionElement = document.getElementById("introduction");
+          const Howto = document.getElementById("howtocontainer");
+          introductionElement.style.opacity = 1;
+          introductionElement.style.display = 'flex';
+          Howto.style.opacity = 0;
+          Howto.style.display = 'none';
+      }
       window.onload = function () {
         var canvas = document.getElementById("canvas"),
           context = canvas.getContext("2d"),
@@ -58,11 +58,11 @@
         let skill2checker = false;
         let fuel = 100;
         let heating = false;
-        let gameplay = false;
+        
         numBalls = 10;
         var items = [];
         let score = 0;
-        const introductionElement = document.getElementById("introduction");
+
         const restartButton = document.getElementById("restart");
 
         var bgImage = new Image();
@@ -86,7 +86,8 @@
             }
           }
         }
-  
+
+        
         function drawHeader() {
           if (gameplay) {
             context.strokeStyle = fuel <= 30 ? "red" : "white";
@@ -157,14 +158,10 @@
 
         document.addEventListener("keydown", function (event) {
           if (event.code === "Space") {
-            
             if (gameplay&score>=0.01) {
               heating = true;
               jump();
               //showgif();
-            }else{
-              gameplay = true;
-              introductionElement.style.opacity = 0;
             }
           } else if (event.code === "ShiftLeft") {
             //powerup updraft
@@ -298,7 +295,7 @@
               box.speed = -2;
               boxObs.push(box);
             }else if (score >= 200 && levelgame == 2) {
-              newWidth = 100;
+              newWidth = Math.random()*100 + 10;
               newHeight = 20;
               var segment1 = new Segment(newWidth, newHeight, "gray");
               segment1.x = startX + i * 300;
@@ -336,7 +333,7 @@
           if (gameplay) {
             if (levelgame == 0) {
               for (var i = 0; i < boxObs.length; i++) {
-                if (ball.y == canvas.height - ball.radius) {
+                if (ball.y == canvas.height-ball.radius) {
                   boxObs[i].x -= 0;
                 } else {
                   if(skill2checker){
@@ -349,13 +346,15 @@
               }
             } else if (levelgame == 1) {
               for (var i = 0; i < boxObs.length; i++) {
-                if (ball.y == canvas.height - ball.radius) {
+                if (ball.y == canvas.height-ball.radius ) {
                   boxObs[i].x -= 0;
-                } if(skill2checker){
+                } else{
+                  if(skill2checker){
                     boxObs[i].x -= 2 * 0.3;
                   }else{
                     boxObs[i].x -= 2;
                   }
+                }
                 //console.log(boxObs[i].y)
                 if (i % 2 == 0) {
                   boxObs[i].y += Math.sin(sudut) * 5;
@@ -365,13 +364,15 @@
               }
             }else if (levelgame == 2){
               for (var i = 0; i < boxObs.length; i++) {
-                if (ball.y == canvas.height - ball.radius) {
+                if (ball.y == canvas.height-ball.radius ) {
                   boxObs[i].x -= 0;
-                } if(skill2checker){
+                } else{
+                  if(skill2checker){
                     boxObs[i].x -= 2 * 0.3;
                   }else{
                     boxObs[i].x -= 2;
                   }
+                }
                 if(i%2==0){
                   var target = reach(boxObs[i+1], ball.x, ball.y);
                   reach(boxObs[i], target.x, target.y);
@@ -499,8 +500,8 @@
           //context.strokeRect(30, 70, 150, 30);
           context.font = "20px Arial";
           context.fillStyle = "white";
-          context.fillText("Final Score :", canvas.width/2-50, 200);
-          context.fillText( score.toFixed(2), canvas.width/2-50, 220);
+          context.fillText("Final Score :", canvas.width/2-50, 300);
+          context.fillText( score.toFixed(2), canvas.width/2-50, 320);
           restartButton.style.display = "block";
           restartButton.addEventListener("click", function (event) {
             event.preventDefault();
@@ -675,10 +676,69 @@
         }
 
         generateObstacles();
-        generateItem();
+        if (gameplay){
+          generateItem();
+        }
+        
         gameLoop();
       };
     </script>
+  </head>
+  <link rel="stylesheet" href="style/style.css" />
+  <body>
+    <div id="howtocontainer">
+      <img src="/assets/fuel.png" width= "100px" alt="">
+      <p>
+        Klik spasi untuk terbang. Jaga <b>fuel</b> agar tidak habis!
+      </p>
+      <img src="/assets/Blaze.png" width= "100px" alt="">
+      <br>
+      <span>Skill Blaze</span>
+      <br>
+      <p>
+        Skill ini akan membuat anda terbang jauh ke angkasa dan menghilangkan rintangan didepan anda.
+        Klik Left Shift untuk mengaktifkan. 
+      </p>
+      <br>
+      <img src="/assets/timetwist.png" width= "100px" alt="">
+      <br>
+      <span>Skill TimeTwist</span>
+      <br>
+      <p>
+        Skill ini akan memperlambat kecepatan dari rintangan yang akan menuju diri anda.
+      </p>
+      <br>
+      <button id="BackHome" onclick="BackMenu()">Back</button>
+    </div>
+    <div id="container">
+      <canvas id="canvas" width="1000" height="700"></canvas>
+      <div id="introduction">
+        <h1 id="judul"><br>Blaze: The Wandering Flame</br</h1>
+        <br>
+        <button id="startButton" onclick="StartGame()">Start</button>
+        <br>
+        <button id="HowtoP" onclick="HowtoShow()">How to play?</button>
+      </div>
+      
+      
+      <button id="restart">RESTART</button>
+    </div>
+    <!-- <img
+      src="./assets/angin.gif"
+      width="0"
+      height="0"
+      id="gif"
+      style="position: absolute"
+    /> -->
+    <img src="./assets/Blaze.png" width="0" height="0" id="skill1">
+    <img src="./assets/timetwist.png" width="0" height="0" id="skill2">
+    <img src="./assets/padlock.png" width="0" height="0" id="skillock">
+    <audio id="pickupSound" src="./assets/sparkle.mp3"></audio>
+    <audio id="skill1sound" src="./assets/woosh.wav"></audio>
+    <audio id="backgroundMusic" autoplay loop>
+      <source src="./assets/bgmhzd.mp3"></source>
+    </audio>
+    
   </body>
 </html>
 
